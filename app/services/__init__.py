@@ -28,6 +28,10 @@ from app.services.file_reader import (
     read_geospatial_file,
 )
 from app.services.measurement import measure_geometry
+from app.services.processing import (
+    ingest_and_process_upload,
+    process_uploaded_file,
+)
 from app.services.storage import (
     EmptyFileError,
     FileTooLargeError,
@@ -75,4 +79,7 @@ __all__ = [
     "extract_feature",
     "extract_features_from_geodataframe",
     "sanitize_json_value",
+    # Processing Pipeline
+    "ingest_and_process_upload",
+    "process_uploaded_file",
 ]

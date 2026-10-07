@@ -1,0 +1,44 @@
+"""Pydantic schemas for feature measurements, geometries, and paginated responses."""
+
+from typing import Any
+from pydantic import BaseModel, ConfigDict, Field
+
+
+class MeasurementDetail(BaseModel):
+    """Calculated metric measurements for a spatial feature."""
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+
+    type: str = Field(description="Measurement metric classification ('area', 'length', 'point', or unsupported type)")
+    value: float | None = Field(default=None, description="Planar measurement value in base metric units (m² or m)")
+    unit: str | None = Field(default=None, description="Measurement unit ('m²', 'm', or None)")
+    projected_crs: str | None = Field(default=None, description="EPSG code or projected CRS used for planar computation")
+    supported: bool = Field(description="Indicates whether the geometry is supported for metric measurement")
+    reason: str | None = Field(default=None, description="Explanation when measurement is unsupported or null")
+    hectares: float | None = Field(default=None, description="Computed area in hectares (for polygons)")
+    kilometers: float | None = Field(default=None, description="Computed length in kilometers (for lines)")
+
+
+class FeatureMeasurementResponse(BaseModel):
+    """Feature geometry, attributes, and corresponding measurement calculation."""
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+
+    feature_id: int = Field(description="Feature identifier")
+    geometry_type: str = Field(description="Geometry primitive type (Polygon, LineString, Point, etc.)")
+    geometry: dict[str, Any] | None = Field(default=None, description="GeoJSON geometry mapping")
+    crs: str = Field(description="Source Coordinate Reference System")
+    properties: dict[str, Any] = Field(default_factory=dict, description="Feature attributes and metadata")
+    measurement: MeasurementDetail = Field(description="Calculated planar measurement details")
+    warnings: list[str] = Field(default_factory=list, description="Any warnings emitted during calculation")
+
+
+class PaginatedMeasurementResponse(BaseModel):
+    """Paginated collection of spatial feature measurements."""
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
+
+    file_id: int = Field(description="ID of the parent uploaded file")
+    filename: str = Field(description="Filename of the uploaded dataset")
+    total_features: int = Field(description="Total count of features contained in the dataset")
+    page: int = Field(description="Current page index (1-based)")
+    page_size: int = Field(description="Number of feature records per page")
+    total_pages: int = Field(description="Total calculated pages")
+    features: list[FeatureMeasurementResponse] = Field(description="List of feature measurement items")

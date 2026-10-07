@@ -1,13 +1,18 @@
-"""Common schemas for standardized API error responses and pagination."""
+"""Common schemas for standardized API error responses."""
 
-from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class ErrorResponse(BaseModel):
-    """Standardized API error response payload."""
+class ErrorDetail(BaseModel):
+    """Structured error payload containing a machine-readable code and explanatory message."""
     model_config = ConfigDict(from_attributes=True)
 
-    error: str = Field(description="High-level error classification or title")
-    detail: str | None = Field(default=None, description="Explanatory detail about the error")
-    code: str | None = Field(default=None, description="Machine-readable error identifier")
+    code: str = Field(description="Machine-readable error identifier")
+    message: str = Field(description="Human-readable explanation of the error")
+
+
+class ErrorResponse(BaseModel):
+    """Consistent application error wrapper."""
+    model_config = ConfigDict(from_attributes=True)
+
+    error: ErrorDetail = Field(description="Error body details")

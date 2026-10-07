@@ -37,8 +37,17 @@ class PaginatedMeasurementResponse(BaseModel):
 
     file_id: int = Field(description="ID of the parent uploaded file")
     filename: str = Field(description="Filename of the uploaded dataset")
-    total_features: int = Field(description="Total count of features contained in the dataset")
-    page: int = Field(description="Current page index (1-based)")
-    page_size: int = Field(description="Number of feature records per page")
-    total_pages: int = Field(description="Total calculated pages")
-    features: list[FeatureMeasurementResponse] = Field(description="List of feature measurement items")
+    total_features: int = Field(default=0, description="Total count of features contained in the dataset")
+    total: int = Field(default=0, description="Total matching features count")
+    page: int = Field(default=1, description="Current page index (1-based)")
+    page_size: int = Field(default=50, description="Number of feature records per page")
+    total_pages: int = Field(default=1, description="Total calculated pages")
+    limit: int = Field(default=50, description="Query limit applied")
+    offset: int = Field(default=0, description="Query offset applied")
+    features: list[FeatureMeasurementResponse] = Field(default_factory=list, description="List of feature measurement items")
+
+    def model_post_init(self, __context):
+        if self.total == 0 and self.total_features != 0:
+            self.total = self.total_features
+        elif self.total_features == 0 and self.total != 0:
+            self.total_features = self.total

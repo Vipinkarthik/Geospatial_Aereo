@@ -7,25 +7,32 @@ from app.models.uploaded_file import FileStatus
 
 
 class FileUploadResponse(BaseModel):
-    """Payload returned immediately following file ingestion."""
+    """Returned on successful file ingestion (HTTP 201)."""
     model_config = ConfigDict(from_attributes=True)
 
-    file_id: int = Field(description="Database primary key identifier for the file")
-    filename: str = Field(description="Original uploaded filename")
-    status: FileStatus = Field(description="Lifecycle status: PROCESSING, COMPLETED, or FAILED")
-    feature_count: int | None = Field(default=None, description="Number of extracted geospatial features")
-    crs: str | None = Field(default=None, description="Source Coordinate Reference System (e.g. EPSG:4326)")
-    message: str = Field(description="Status confirmation or summary message")
+    id: int | None = Field(default=None, description="Unique file identifier")
+    filename: str = Field(description="Name of the uploaded file")
+    feature_count: int | None = Field(default=None, description="Number of geospatial features")
+    crs: str | None = Field(default=None, description="Coordinate Reference System")
+    status: FileStatus = Field(description="File processing lifecycle status")
+    file_id: int | None = Field(default=None, description="Alias for id for backwards compatibility")
+    message: str | None = Field(default=None, description="Optional summary message")
+
+    def model_post_init(self, __context):
+        if self.id is None and self.file_id is not None:
+            self.id = self.file_id
+        elif self.file_id is None and self.id is not None:
+            self.file_id = self.id
 
 
 class FileDetailResponse(BaseModel):
-    """Detailed file record inspection payload."""
+    """Detailed file record metadata."""
     model_config = ConfigDict(from_attributes=True)
 
-    id: int = Field(description="Unique file ID")
+    id: int = Field(description="Unique file identifier")
     filename: str = Field(description="Original filename")
-    status: FileStatus = Field(description="Current processing status")
     feature_count: int | None = Field(default=None, description="Total features processed")
     crs: str | None = Field(default=None, description="Source Coordinate Reference System")
-    error_message: str | None = Field(default=None, description="Diagnostic error report if processing failed")
-    created_at: datetime = Field(description="Timestamp when the file was ingested")
+    status: FileStatus = Field(description="Current status (PROCESSING, COMPLETED, FAILED)")
+    error_message: str | None = Field(default=None, description="Error report if processing failed")
+    created_at: datetime = Field(description="Timestamp when the file was uploaded")

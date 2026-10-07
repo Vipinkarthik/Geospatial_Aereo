@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document id="root_doc">
+    <Schema id="sample" name="sample">
+      <SimpleField name="type" type="string"/>
+    </Schema>
+    <Schema id="sample.schema">
+      <SimpleField name="type" type="string"/>
+    </Schema>
+    <Document id="sample">
+      <name>sample</name>
+      <Placemark id="sample.1">
+        <name>Plot A</name>
+        <ExtendedData>
+          <SchemaData schemaUrl="#sample.schema">
+            <SimpleData name="type">field</SimpleData>
+          </SchemaData>
+        </ExtendedData>
+        <Polygon>
+          <outerBoundaryIs>
+            <LinearRing>
+              <coordinates>
+                78,11,0
+                78.001,11,0
+                78.001,11.001,0
+                78,11.001,0
+                78,11,0
+              </coordinates>
+            </LinearRing>
+          </outerBoundaryIs>
+        </Polygon>
+      </Placemark>
+      <Placemark id="sample.2">
+        <name>Road 1</name>
+        <ExtendedData>
+          <SchemaData schemaUrl="#sample.schema">
+            <SimpleData name="type">road</SimpleData>
+          </SchemaData>
+        </ExtendedData>
+        <LineString>
+          <coordinates>
+            78,11,0
+            78.01,11,0
+          </coordinates>
+        </LineString>
+      </Placemark>
+      <Placemark id="sample.3">
+        <name>Marker 1</name>
+        <ExtendedData>
+          <SchemaData schemaUrl="#sample.schema">
+            <SimpleData name="type">landmark</SimpleData>
+          </SchemaData>
+        </ExtendedData>
+        <Point>
+          <coordinates>
+            78.005,11.005,0
+          </coordinates>
+        </Point>
+      </Placemark>
+    </Document>
+  </Document>
+</kml>

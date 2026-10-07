@@ -72,7 +72,7 @@ class ZeroFeaturesError(GeospatialReaderError):
 
 def _validate_zip_archive_security(
     zip_path: Path,
-    max_uncompressed_bytes: int = MAX_UNCOMPRESSED_ARCHIVE_BYTES,
+    max_uncompressed_bytes: int | None = None,
 ) -> tuple[str, list[str]]:
     """
     Perform deep security and structural validation on a ZIP archive before extraction.
@@ -87,6 +87,11 @@ def _validate_zip_archive_security(
     Returns:
     - (primary_shp_entry_name, list_of_all_valid_entries)
     """
+    limit_uncompressed = (
+        max_uncompressed_bytes
+        if max_uncompressed_bytes is not None
+        else MAX_UNCOMPRESSED_ARCHIVE_BYTES
+    )
     # 1. Content magic byte validation
     with open(zip_path, "rb") as f:
         header = f.read(4)
@@ -106,9 +111,9 @@ def _validate_zip_archive_security(
 
             # 3. Decompression bomb threshold check
             total_uncompressed = sum(info.file_size for info in infolist)
-            if total_uncompressed > max_uncompressed_bytes:
+            if total_uncompressed > limit_uncompressed:
                 raise DecompressionBombError(
-                    f"Total uncompressed size ({total_uncompressed} bytes) exceeds limit of {max_uncompressed_bytes} bytes."
+                    f"Total uncompressed size ({total_uncompressed} bytes) exceeds limit of {limit_uncompressed} bytes."
                 )
 
             # Filter out macOS metadata files and folders
@@ -167,7 +172,7 @@ def _validate_zip_archive_security(
 
 def _read_shapefile_zip(
     zip_path: Path,
-    max_uncompressed_bytes: int = MAX_UNCOMPRESSED_ARCHIVE_BYTES,
+    max_uncompressed_bytes: int | None = None,
 ) -> tuple[gpd.GeoDataFrame, str]:
     """Safely extract validated shapefile archive into a temporary folder and read it."""
     primary_shp, _ = _validate_zip_archive_security(zip_path, max_uncompressed_bytes)
@@ -239,7 +244,7 @@ def _read_kml(kml_path: Path) -> tuple[gpd.GeoDataFrame, str]:
 
 def read_geospatial_file(
     file_path: Path | str,
-    max_uncompressed_bytes: int = MAX_UNCOMPRESSED_ARCHIVE_BYTES,
+    max_uncompressed_bytes: int | None = None,
 ) -> tuple[gpd.GeoDataFrame, str]:
     """
     Validate and ingest a geospatial file (.zip Shapefile or .kml).

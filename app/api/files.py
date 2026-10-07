@@ -47,19 +47,29 @@ def upload_file(
             code = "CORRUPT_ARCHIVE"
         elif "missing" in msg_lower and (".prj" in msg_lower or "crs" in msg_lower or "coordinate reference" in msg_lower):
             code = "MISSING_CRS"
-        elif "missing" in msg_lower and ("companion" in msg_lower or ".shp" in msg_lower or "component" in msg_lower):
+        elif "does not contain any .shp" in msg_lower or ("missing" in msg_lower and ("companion" in msg_lower or ".shp" in msg_lower or "component" in msg_lower)):
             code = "MISSING_SHAPEFILE_COMPONENTS"
-        elif "zero" in msg_lower and "feature" in msg_lower:
+        elif "zero" in msg_lower and ("feature" in msg_lower or "layer" in msg_lower):
             code = "ZERO_FEATURES"
-        elif "unreadable" in msg_lower or "kml" in msg_lower:
+        elif "unreadable" in msg_lower or "not contain valid kml" in msg_lower or "kml" in msg_lower:
             code = "UNREADABLE_KML"
         elif "exceeds limit" in msg_lower or "bomb" in msg_lower:
             code = "ARCHIVE_TOO_LARGE"
         elif "zip-slip" in msg_lower or "traversal" in msg_lower:
             code = "SECURITY_VIOLATION"
 
+        status_code = (
+            status.HTTP_422_UNPROCESSABLE_ENTITY
+            if code == "ZERO_FEATURES"
+            else (
+                status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+                if code == "ARCHIVE_TOO_LARGE"
+                else status.HTTP_400_BAD_REQUEST
+            )
+        )
+
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status_code,
             detail={
                 "code": code,
                 "message": msg,
